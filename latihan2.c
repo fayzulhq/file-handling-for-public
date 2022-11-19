@@ -2,183 +2,219 @@
 #include <stdlib.h>
 #include <string.h>
 
-// struct stuff
+#define BUFFER_SIZE 64
+
+#define EXIT 0
+#define INSERT_MEMBER 1
+#define SHOW_MEMBER 2
+#define SEARCH_MEMBER 3
+
+#define LECTURER 1
+#define STUDENT 2
+
 typedef struct staff
 {
-    char nama[20];
-    char nim[10];
-} staff;
+    char *nama;
+    char *nim;
+} staff_t;
 
 typedef struct dosen
 {
-    staff dsn;
-    long long int gaji;
-    char matkul[20];
-} dosen;
+    staff_t dsn;
+    unsigned long gaji;
+    char *matkul;
+} dosen_t;
 
-typedef struct mahasiwa
+typedef struct mahasiswa
 {
-    staff mhs;
-    char jurusan[20];
-    long long int ukt;
-} mahasiswa;
+    staff_t mhs;
+    char *jurusan;
+    unsigned long ukt;
+} mahasiswa_t;
 
-void menu();
-void print();
-// void search();
-void insert();
-
-int choice = 0;
-
-int main()
+void show_options()
 {
-    menu();
-    switch (choice)
-    {
-    case 1:
-        insert();
-        break;
-    case 2:
-        print();
-        break;
-    case 3:
-        // search();
-        break;
-    case 4:
-        exit(0);
-    default:
-        printf("Input Anda tidak valid\n");
-        break;
-    }
-    return 0;
+    puts("=================================");
+    puts("Masukkan anggota............... 1");
+    puts("Tampilkan anggota.............. 2");
+    puts("Cari anggota................... 3");
+    puts("Keluar......................... 0");
 }
 
-void menu()
+void select_option(int *handler)
 {
-    puts("=================================\n");
-    puts("Masukkan anggota............... 1\n");
-    puts("Tampilkan anggota.............. 2\n");
-    puts("Cari anggota................... 3\n");
-    puts("Keluar......................... 4\n");
     printf("Masukkan pilihan : ");
-    scanf("%d", &choice);
+    scanf("%d", handler);
 }
 
-void insert()
+void insert_lecturer(const staff_t *staff)
 {
-    char nama[20], nim[10];
-    int status;
-    fflush(stdin);
-    printf("Masukkan nama :");
-    scanf("%[^\n]s", nama);
-    printf("Nim :");
-    scanf("%10s", nim);
-    puts("\nDosen.........1\n");
-    puts("Mahasiswa.....2\n");
-    printf("Status :");
-    scanf("%d", &status);
+    FILE *fn = fopen("Dosen_kampus.txt", "a");
 
-    if (status == 1)
+    if (fn == NULL)
     {
-        FILE *fp = fopen("Dosen_kampus1.txt", "a");
-        if (fp == NULL)
-        {
-            puts("Maaf file tidak dapat diakses!\n");
-        }
-        dosen new_dosen;
-
-        char matkul[20];
-        long long int gaji;
-        printf("Masukkan Gaji : Rp");
-        scanf("%lld", &gaji);
-        fflush(stdin);
-        printf("Mata kuliah : ");
-        scanf("%[^\n]s", matkul);
-
-        strcpy(new_dosen.dsn.nama, nama);
-        strcpy(new_dosen.dsn.nim, nim);
-        strcpy(new_dosen.matkul, matkul);
-        new_dosen.gaji = gaji;
-
-        // fprintf(fp, "%-20s\t%-10s\t\t%-20s\tRp%lld\n", new_dosen.dsn.nama, new_dosen.dsn.nim, new_dosen.matkul, new_dosen.gaji);
-
-        fwrite(&new_dosen,sizeof(dosen),1,fp);
-
-        fclose(fp);
-        system("clear");
-        puts("Data baru berhasil ditambahkan!\n");
+        puts("File tidak dapat diakses");
+        exit(EXIT_FAILURE);
     }
 
-    else if (status == 2)
-    {
-        FILE *fp = fopen("mahasiswa_kampus.txt", "a");
-        if (fp == NULL)
-        {
-            puts("Maaf file tidak dapat diakses!\n");
-        }
-        mahasiswa *new_mahasiswa;
-        new_mahasiswa = (mahasiswa *)malloc(sizeof(mahasiswa));
+    dosen_t *dosen = (dosen_t *)calloc(sizeof(dosen_t), 1);
+    dosen->dsn = *staff;
+    dosen->gaji = 0;
+    dosen->matkul = (char *)malloc(BUFFER_SIZE);
 
-        if (new_mahasiswa == NULL)
-        {
-            printf("Memmory tidak tersedia!\n");
-            exit(0);
-        }
+    printf("Masukkan gaji: Rp");
+    scanf("%lu", &dosen->gaji);
 
-        char jurusan[20];
-        long long int ukt;
-        printf("Masukkan ukt : Rp");
-        scanf("%lld", &ukt);
-        fflush(stdin);
-        printf("Jurusan : ");
-        scanf("%[^\n]s", jurusan);
+    printf("Mata kuliah: ");
+    scanf(" %[^\n]", dosen->matkul);
 
-        strcpy(new_mahasiswa->mhs.nama, nama);
-        strcpy(new_mahasiswa->mhs.nim, nim);
-        strcpy(new_mahasiswa->jurusan, jurusan);
-        new_mahasiswa->ukt = ukt;
+    //   fprintf(fn, "%s,%s,%s,%lu\n", dosen->dsn.nama, dosen->dsn.nim,
+    //           dosen->matkul, dosen->gaji);
 
-        // fprintf(fp, "%-20s\t%-10s\t\t%-20s\tRp%lld\n", new_mahasiswa->mhs.nama, new_mahasiswa->mhs.nim, new_mahasiswa->jurusan, new_mahasiswa->ukt);
+    fwrite(dosen, sizeof(dosen_t), 1, fn);
 
-        fwrite(&new_mahasiswa,sizeof(mahasiswa),1,fp);
-
-        fclose(fp);
-        system("clear");
-        puts("Data baru berhasil ditambahkan!\n");
-    }
-    else{
-        printf("Masukkan pilihan yang benar!");
-        insert();
-    }
+    fclose(fn);
+    free(dosen);
+    system("clear");
+    puts("Data baru berhasil ditambahkan!");
+    exit(EXIT_SUCCESS);
 }
 
-void print(){
+void insert_student(staff_t *staff)
+{
+    FILE *fn = fopen("Mahasiswa_Kampus.csv", "a");
+
+    if (fn == NULL)
+    {
+        puts("File tidak dapat diakses");
+        exit(EXIT_FAILURE);
+    }
+
+    mahasiswa_t *mahasiswa = (mahasiswa_t *)calloc(sizeof(mahasiswa_t), 1);
+    mahasiswa->mhs = *staff;
+    mahasiswa->ukt = 0;
+    mahasiswa->jurusan = (char *)malloc(BUFFER_SIZE);
+
+    printf("Masukkan UKT: Rp");
+    scanf("%lu", &mahasiswa->ukt);
+
+    printf("Jurusan kuliah: ");
+    scanf(" %[^\n]", mahasiswa->jurusan);
+
+    //   fprintf(fn, "%s,%s,%s,%lu\n", mahasiswa->mhs.nama, mahasiswa->mhs.nim,
+    //           mahasiswa->jurusan, mahasiswa->ukt);
+
+    fwrite(mahasiswa, sizeof(mahasiswa_t), 1, fn);
+
+    fclose(fn);
+    free(mahasiswa);
+    system("clear");
+    puts("Data baru berhasil ditambahkan!");
+    exit(EXIT_SUCCESS);
+}
+
+void insert_member()
+{
+    // mengalokasi memori untuk staff
+    staff_t *staff = (staff_t *)calloc(sizeof(staff_t), 1);
+    staff->nama = (char *)malloc(BUFFER_SIZE);
+    staff->nim = (char *)malloc(BUFFER_SIZE);
+
+    printf("Masukkan nama: ");
+    scanf(" %[^\n]", staff->nama);
+    printf("NIM: ");
+    scanf("%10s", staff->nim);
+    while (getchar() != '\n')
+        ;
+
+    puts("");
+    puts("Dosen.........1");
+    puts("Mahasiswa.....2");
+
+    while (1)
+    {
+        int status;
+        printf("Status: ");
+        scanf("%u", &status);
+
+        switch (status)
+        {
+        case LECTURER:
+            insert_lecturer(staff);
+        case STUDENT:
+            insert_student(staff);
+            break;
+        default:
+            puts("Masukan tidak valid, coba lagi!");
+            break;
+        }
+    }
+
+    free(staff);
+}
+
+void print_member(){
     int status;
     puts("\n\nTampilkan daftar dosen ............1");
     puts("\nTampilkan daftar mahasiswa ........2");
     printf("Masukkan pilihan : ");scanf("%d",&status);
 
-    if(status == 1){
+    if(status == LECTURER){
         FILE *fp;
-        fp = fopen("Dosen_kampus1.txt","r");
+        fp = fopen("Dosen_kampus.txt","r");
         if(fp == NULL){
             printf("Maaf anda tidak dapat mengakses data ini!\n");
             exit(0);
         }
-        printf("test\n");
 
-        dosen current;
-        while (fread(&current,sizeof(dosen),1,fp))
-        {
-            system("clear");
-            printf("Nama    : %s\n",current.dsn.nama);
-            printf("Nim     : %s\n",current.dsn.nim);
-            printf("Matkul  : %s\n",current.matkul);
-            printf("Gaji    : Rp%lld\n",current.gaji);
-            printf("\n\n");
-        }
+        dosen_t current;
+
+        printf("Nama    : %s\n",current.dsn.nama);
+        printf("Nim     : %s\n",current.dsn.nim);
+        printf("Matkul  : %s\n",current.matkul);
+        printf("Gaji    : Rp%ld\n",current.gaji);
+        printf("\n\n");
+
+
+        // while (fread(&current,sizeof(dosen_t),1,fp))
+        // {
+        //     system("clear");
+        //     printf("Nama    : %s\n",current.dsn.nama);
+        //     printf("Nim     : %s\n",current.dsn.nim);
+        //     printf("Matkul  : %s\n",current.matkul);
+        //     printf("Gaji    : Rp%ld\n",current.gaji);
+        //     printf("\n\n");
+        // }
         fclose(fp);
     }
+}
 
+int main(int argc, char const *argv[])
+{
+    show_options();
+    while (1)
+    {
+        int pilihan;
+        select_option(&pilihan);
 
+        switch (pilihan)
+        {
+        case INSERT_MEMBER:
+            insert_member();
+            break;
+        case SHOW_MEMBER:
+            print_member();
+            break;
+        case SEARCH_MEMBER:
+            // search
+            break;
+        case EXIT:
+            exit(EXIT_SUCCESS);
+
+        default:
+            printf("Input tidak valid!");
+            break;
+        }
+    }
+    return 0;
 }
