@@ -47,6 +47,7 @@ int main()
     case 4:
         exit(0);
     default:
+        printf("Input Anda tidak valid\n");
         break;
     }
     return 0;
@@ -79,7 +80,7 @@ void insert()
 
     if (status == 1)
     {
-        FILE *fp = fopen("Dosen_kampus.txt", "a");
+        FILE *fp = fopen("Dosen_kampus1.txt", "a");
         if (fp == NULL)
         {
             puts("Maaf file tidak dapat diakses!\n");
@@ -99,7 +100,9 @@ void insert()
         strcpy(new_dosen.matkul, matkul);
         new_dosen.gaji = gaji;
 
-        fprintf(fp, "%-20s\t%-10s\t\t%-20s\tRp%lld\n", new_dosen.dsn.nama, new_dosen.dsn.nim, new_dosen.matkul, new_dosen.gaji);
+        // fprintf(fp, "%-20s\t%-10s\t\t%-20s\tRp%lld\n", new_dosen.dsn.nama, new_dosen.dsn.nim, new_dosen.matkul, new_dosen.gaji);
+
+        fwrite(&new_dosen,sizeof(dosen),1,fp);
 
         fclose(fp);
         system("clear");
@@ -135,7 +138,9 @@ void insert()
         strcpy(new_mahasiswa->jurusan, jurusan);
         new_mahasiswa->ukt = ukt;
 
-        fprintf(fp, "%-20s\t%-10s\t\t%-20s\tRp%lld\n", new_mahasiswa->mhs.nama, new_mahasiswa->mhs.nim, new_mahasiswa->jurusan, new_mahasiswa->ukt);
+        // fprintf(fp, "%-20s\t%-10s\t\t%-20s\tRp%lld\n", new_mahasiswa->mhs.nama, new_mahasiswa->mhs.nim, new_mahasiswa->jurusan, new_mahasiswa->ukt);
+
+        fwrite(&new_mahasiswa,sizeof(mahasiswa),1,fp);
 
         fclose(fp);
         system("clear");
@@ -155,20 +160,21 @@ void print(){
 
     if(status == 1){
         FILE *fp;
-        fp = fopen("Dosen_kampus.txt","r");
+        fp = fopen("Dosen_kampus1.txt","r");
         if(fp == NULL){
             printf("Maaf anda tidak dapat mengakses data ini!\n");
             exit(0);
         }
+        printf("test\n");
 
-        dosen current_dosen;
-        while (fread(&current_dosen,sizeof(dosen),1,fp) != 0)
+        dosen current;
+        while (fread(&current,sizeof(dosen),1,fp))
         {
             system("clear");
-            printf("Nama    : %s\n",current_dosen.dsn.nama);
-            // printf("Nim     : %s\n",current_dosen.dsn.nim);
-            // printf("Matkul  : %s\n",current_dosen.matkul);
-            // printf("Gaji    : Rp%lld\n",current_dosen.gaji);
+            printf("Nama    : %s\n",current.dsn.nama);
+            printf("Nim     : %s\n",current.dsn.nim);
+            printf("Matkul  : %s\n",current.matkul);
+            printf("Gaji    : Rp%lld\n",current.gaji);
             printf("\n\n");
         }
         fclose(fp);
